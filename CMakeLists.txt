@@ -793,3 +793,6 @@ if(LIBVNCSERVER_INSTALL)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
         )
 endif()
+
+
+add_definitions(-DSOFTCAMP_TLS)

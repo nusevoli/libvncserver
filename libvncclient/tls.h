@@ -20,6 +20,10 @@
  *  USA.
  */
 
+#ifdef SOFTCAMP_TLS
+rfbBool HandleSoftcampTLS(rfbClient* client);
+#endif
+
 /* Handle Anonymous TLS Authentication (18) with the server.
  * After authentication, client->tlsSession will be set.
  */

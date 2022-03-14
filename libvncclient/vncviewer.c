@@ -379,10 +379,23 @@ static rfbBool rfbInitConnection(rfbClient* client)
     }
   }
 
+#ifdef SOFTCAMP_TLS
+  rfbClientLog("SOFTCAMP_TLS ENABLED: %s %d\n", __FUNCTION__, __LINE__);
+
+  if (!InitialiseRFBConnectionForSoftcampTLS(client)) {
+    return FALSE;
+  }
+    
+
+#else
+  rfbClientLog("SOFTCAMP_TLS DISABLED: %s %d\n", __FUNCTION__, __LINE__);
+
   /* Initialise the VNC connection, including reading the password */
 
   if (!InitialiseRFBConnection(client))
     return FALSE;
+
+#endif // SOFTCAMP_TLS
 
   client->width=client->si.framebufferWidth;
   client->height=client->si.framebufferHeight;

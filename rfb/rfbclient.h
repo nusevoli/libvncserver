@@ -496,6 +496,11 @@ extern rfbBool ConnectToRFBServer(rfbClient* client,const char *hostname, int po
 extern rfbBool ConnectToRFBRepeater(rfbClient* client,const char *repeaterHost, int repeaterPort, const char *destHost, int destPort);
 extern void SetClientAuthSchemes(rfbClient* client,const uint32_t *authSchemes, int size);
 extern rfbBool InitialiseRFBConnection(rfbClient* client);
+
+#ifdef SOFTCAMP_TLS
+	extern rfbBool InitialiseRFBConnectionForSoftcampTLS(rfbClient* client);
+#endif // SOFTCAMP_TLS
+
 /**
  * Sends format and encoding parameters to the server. Your application can
  * modify the 'client' data structure directly. However some changes to this

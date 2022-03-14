@@ -381,6 +381,77 @@ error_free_ctx:
   return NULL;
 }
 
+#ifdef SOFTCAMP_TLS
+
+static SSL *
+open_SoftcampTLS_connection (rfbClient *client, int sockfd, rfbBool anonTLS, rfbCredential *cred)
+{
+  SSL_CTX *ssl_ctx = NULL;
+  SSL *ssl = NULL;
+  int n, finished = 0;
+
+  if (!(ssl_ctx = SSL_CTX_new(SSLv23_client_method())))
+  {
+    rfbClientLog("Could not create new SSL context.\n");
+    return NULL;
+  }
+
+  if (!(ssl = SSL_new (ssl_ctx)))
+  {
+    rfbClientLog("Could not create a new SSL session.\n");
+    goto error_free_ctx;
+  }
+
+  SSL_set_fd (ssl, sockfd);
+  SSL_CTX_set_app_data (ssl_ctx, client);
+
+  do
+  {
+    n = SSL_connect(ssl);
+		
+    if (n != 1) 
+    {
+      if (wait_for_data(ssl, n, 1) != 1) 
+      {
+        finished = 1;
+        SSL_shutdown(ssl);
+
+        goto error_free_ssl;
+      }
+    }
+  } while( n != 1 && finished != 1 );
+
+  return ssl;
+
+error_free_ssl:
+  SSL_free(ssl);
+
+error_free_ctx:
+  SSL_CTX_free(ssl_ctx);
+
+  return NULL;
+}
+
+rfbBool HandleSoftcampTLS(rfbClient* client)
+{
+  if(!InitializeTLS()) {
+    return FALSE;
+  }
+
+  if (client->tlsSession) return TRUE;
+
+  client->tlsSession = open_SoftcampTLS_connection (client, client->sock, TRUE, NULL);
+
+  if (!client->tlsSession)
+    return FALSE;
+
+  INIT_MUTEX(client->tlsRwMutex);
+
+  rfbClientLog("Softcamp TLS session initialized.\n");
+
+  return TRUE;
+}
+#endif // SOFTCAMP_TLS
 
 static rfbBool
 InitializeTLSSession(rfbClient* client, rfbBool anonTLS, rfbCredential *cred)
@@ -663,6 +734,7 @@ WriteToTLS(rfbClient* client, const char *buf, unsigned int n)
     }
     offset += (unsigned int)ret;
   }
+
   return offset;
 }
 
